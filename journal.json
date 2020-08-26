@@ -1,0 +1,107 @@
+{
+  "chaoslib-version": "1.11.0",
+  "platform": "macOS-10.14.6-x86_64-i386-64bit",
+  "node": "Aashishs-MacBook-Pro.local",
+  "experiment": {
+    "version": "1.0.0",
+    "title": "What happens if we terminate an instance of the application?",
+    "description": "If an instance of the application is terminated, the applications as a whole should still be operational.",
+    "tags": [
+      "k8s",
+      "pod",
+      "http"
+    ],
+    "configuration": {
+      "ingress_host": {
+        "type": "env",
+        "key": "INGRESS_HOST"
+      }
+    },
+    "steady-state-hypothesis": {
+      "title": "The app is healthy",
+      "probes": [
+        {
+          "name": "app-responds-to-requests",
+          "type": "probe",
+          "tolerance": 200,
+          "provider": {
+            "type": "http",
+            "timeout": 3,
+            "verify_tls": false,
+            "url": "http://${ingress_host}/demo/person",
+            "headers": {
+              "Host": "go-demo-8.acme.com"
+            }
+          }
+        }
+      ]
+    },
+    "method": [
+      {
+        "type": "action",
+        "name": "terminate-app-pod",
+        "provider": {
+          "type": "python",
+          "module": "chaosk8s.pod.actions",
+          "func": "terminate_pods",
+          "arguments": {
+            "label_selector": "app=go-demo-8",
+            "rand": true,
+            "ns": "go-demo-8"
+          }
+        },
+        "pauses": {
+          "after": 2
+        }
+      }
+    ],
+    "dry": false
+  },
+  "start": "2020-08-11T18:42:48.735114",
+  "status": "failed",
+  "deviated": false,
+  "steady_states": {
+    "before": {
+      "steady_state_met": false,
+      "probes": [
+        {
+          "activity": {
+            "name": "app-responds-to-requests",
+            "type": "probe",
+            "tolerance": 200,
+            "provider": {
+              "type": "http",
+              "timeout": 3,
+              "verify_tls": false,
+              "url": "http://${ingress_host}/demo/person",
+              "headers": {
+                "Host": "go-demo-8.acme.com"
+              }
+            }
+          },
+          "output": {
+            "status": 404,
+            "headers": {
+              "Content-Type": "text/plain; charset=utf-8",
+              "Set-Cookie": "shop_session-id=86ccbac4-c67a-4258-b87a-b194f4f8f060; Max-Age=172800",
+              "X-Content-Type-Options": "nosniff",
+              "Date": "Tue, 11 Aug 2020 18:42:48 GMT",
+              "Content-Length": "19"
+            },
+            "body": "404 page not found\n"
+          },
+          "status": "succeeded",
+          "start": "2020-08-11T18:42:48.735844",
+          "end": "2020-08-11T18:42:48.744402",
+          "duration": 0.008558,
+          "tolerance_met": false
+        }
+      ]
+    },
+    "after": null
+  },
+  "run": [],
+  "rollbacks": [],
+  "end": "2020-08-11T18:42:48.744712",
+  "duration": 0.03603506088256836
+}

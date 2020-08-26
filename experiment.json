@@ -1,0 +1,40 @@
+{
+    "version": "1.0.0",
+    "title": "Randomness",
+    "description": "N/A",
+    "tags": [],
+    "steady-state-hypothesis": {
+        "title": "Random State Check",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "all_microservices_healthy",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosk8s.probes",
+                    "func": "all_microservices_healthy",
+                    "arguments": {
+                        "ns": "go-demo-8"
+                    }
+                },
+                "tolerance": "True"
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "kill_microservice",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.actions",
+                "func": "kill_microservice",
+                "arguments": {
+                    "name": "Random Killing",
+                    "ns": "go-demo-8",
+                    "label_selector": "rand"
+                }
+            }
+        }
+    ]
+}
