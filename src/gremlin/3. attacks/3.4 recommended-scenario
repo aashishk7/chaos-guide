@@ -1,0 +1,14 @@
+Recommended Scenarios
+Recommended Scenarios are pre-configured Scenarios created to test real-world failure modes, or to use as examples to customize to your needs.
+
+Running a Recommended Scenario
+To run a Recommended Scenario, select “Add Targets and Run” from the Recommended Scenario’s details page, select the targets to attack, and select “Run Scenario”.
+When adding targets to the Scenario, it adds the same tag selection to each of the attacks in the Scenario.
+
+Customizing a Recommended Scenario
+To customize and run a Recommended Scenario, select the Scenario you want to run, and select “Customize”.
+You can also select “Add Targets and Run” from the Recommended Scenario’s details page, and select “Customize” on the targeting slide-out.
+
+Scheduling Scenarios
+Scenarios can be scheduled to run randomly within a timeframe.
+A Scenario will run at least once on the day and in the time window you select. The time window the Scenario runs can also be set.
