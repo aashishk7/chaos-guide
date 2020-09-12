@@ -1,0 +1,70 @@
+version: 1.0.0
+title: What happens if we abort responses
+description: If responses are aborted, the dependant application should retry and/or timeout requests
+tags:
+- k8s
+- istio
+- http
+configuration:
+  ingress_host:
+      type: env
+      key: INGRESS_HOST
+steady-state-hypothesis:
+  title: The app is healthy
+  probes:
+  - type: probe
+    name: app-responds-to-requests
+    tolerance: 200
+    provider:
+      type: http
+      timeout: 5
+      verify_tls: false
+      url: http://${ingress_host}?addr=http://twflix-demo
+      headers:
+        Host: twflix-ui.acme.com
+  - type: probe
+    tolerance: 200
+    ref: app-responds-to-requests
+  - type: probe
+    tolerance: 200
+    ref: app-responds-to-requests
+  - type: probe
+    tolerance: 200
+    ref: app-responds-to-requests
+  - type: probe
+    tolerance: 200
+    ref: app-responds-to-requests
+method:
+- type: action
+  name: abort-failure
+  provider:
+    type: python
+    module: chaosistio.fault.actions
+    func: add_abort_fault
+    arguments:
+      virtual_service_name: twflix-demo
+      http_status: 500
+      routes:
+        - destination:
+            host: twflix-demo
+            subset: primary
+      percentage: 50
+      version: networking.istio.io/v1alpha3
+      ns: twflix-demo
+  pauses: 
+    after: 1
+rollbacks:
+- type: action
+  name: remove-abort-failure
+  provider:
+    type: python
+    func: remove_abort_fault
+    module: chaosistio.fault.actions
+    arguments:
+      virtual_service_name: twflix-demo
+      routes:
+        - destination:
+            host: twflix-demo
+            subset: primary
+      version: networking.istio.io/v1alpha3
+      ns: twflix-demo

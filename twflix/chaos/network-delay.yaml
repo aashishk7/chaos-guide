@@ -1,0 +1,70 @@
+version: 1.0.0
+title: What happens if we delay responses
+description: If responses delayed, the dependant application should timeout the request and retry
+tags:
+- k8s
+- istio
+- http
+configuration:
+  ingress_host:
+      type: env
+      key: INGRESS_HOST
+steady-state-hypothesis:
+  title: The app is healthy
+  probes:
+  - type: probe
+    name: app-responds-to-requests
+    tolerance: 200
+    provider:
+      type: http
+      timeout: 15
+      verify_tls: false
+      url: http://${ingress_host}?addr=http://twflix-demo
+      headers:
+        Host: twflix-ui.acme.com
+  - type: probe
+    tolerance: 200
+    ref: app-responds-to-requests
+  - type: probe
+    tolerance: 200
+    ref: app-responds-to-requests
+  - type: probe
+    tolerance: 200
+    ref: app-responds-to-requests
+  - type: probe
+    tolerance: 200
+    ref: app-responds-to-requests
+method:
+- type: action
+  name: delay
+  provider:
+    type: python
+    module: chaosistio.fault.actions
+    func: add_delay_fault
+    arguments:
+      virtual_service_name: twflix-demo
+      fixed_delay: 15s
+      routes:
+        - destination:
+            host: twflix-demo
+            subset: primary
+      percentage: 90
+      version: networking.istio.io/v1alpha3
+      ns: twflix-demo
+  pauses: 
+    after: 1
+rollbacks:
+- type: action
+  name: remove-delay
+  provider:
+    type: python
+    func: remove_delay_fault
+    module: chaosistio.fault.actions
+    arguments:
+      virtual_service_name: twflix-demo
+      routes:
+        - destination:
+            host: twflix-demo
+            subset: primary
+      version: networking.istio.io/v1alpha3
+      ns: twflix-demo
