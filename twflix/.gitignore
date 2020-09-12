@@ -1,0 +1,6 @@
+/bin
+/chaostoolkit.log
+/journal*.json
+/tmp.yaml
+/report.pdf
+/discovery.json

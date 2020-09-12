@@ -1,0 +1,56 @@
+version: 1.0.0
+title: What happens if we terminate a Pod?
+description: If a Pod is terminated, a new one should be created in its places.
+tags:
+- k8s
+- pod
+steady-state-hypothesis:
+  title: Pod exists
+  probes:
+  - name: pod-exists
+    type: probe
+    tolerance: 1
+    provider:
+      type: python
+      func: count_pods
+      module: chaosk8s.pod.probes
+      arguments:
+        label_selector: app=twflix-demo
+        ns: twflix-demo-chaos-resource-2
+  - name: pod-in-phase
+    type: probe
+    tolerance: true
+    provider:
+      type: python
+      func: pods_in_phase
+      module: chaosk8s.pod.probes
+      arguments:
+        label_selector: app=twflix-demo
+        ns: twflix-demo-chaos-resource-2
+        phase: Running
+  - name: pod-in-conditions
+    type: probe
+    tolerance: true
+    provider:
+      type: python
+      func: pods_in_conditions
+      module: chaosk8s.pod.probes
+      arguments:
+        label_selector: app=twflix-demo
+        ns: twflix-demo-chaos-resource-2
+        conditions:
+        - type: Ready
+          status: "True"
+method:
+- type: action
+  name: terminate-pod
+  provider:
+    type: python
+    module: chaosk8s.pod.actions
+    func: terminate_pods
+    arguments:
+      label_selector: app=twflix-demo
+      rand: true
+      ns: twflix-demo-chaos-resource-2
+  pauses: 
+    after: 15
